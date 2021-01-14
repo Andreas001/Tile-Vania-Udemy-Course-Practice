@@ -9,6 +9,7 @@ public class Player : MonoBehaviour
     [SerializeField] float runSpeed = 5f;
     [SerializeField] float jumpSpeed = 5f;
     [SerializeField] float climbSpeed = 5f;
+    [SerializeField] Vector2 deathKick = new Vector2(25f, 25f);
 
     //State
     bool isAlive = true;
@@ -27,10 +28,13 @@ public class Player : MonoBehaviour
 
     void Update()
     {
-        Run();
-        Jump();
-        ClimbLadder();
-        FlipSprite();
+        if(isAlive) {
+            Run();
+            Jump();
+            ClimbLadder();
+            FlipSprite();
+            Die();
+        }
     }
 
     private void Run() {
@@ -79,4 +83,13 @@ public class Player : MonoBehaviour
             transform.localScale = new Vector2(Mathf.Sign(rb.velocity.x), 1);
         }
     } //Just changes the local scale x value to either -1 or 1 using Mathf Sign depending on velocity
+
+    private void Die() {
+        if (GetComponent<CapsuleCollider2D>().IsTouchingLayers(LayerMask.GetMask("Enemy","Hazards"))) {
+            anim.SetTrigger("dying");
+            GetComponent<Rigidbody2D>().velocity = deathKick;
+            isAlive = false;
+            FindObjectOfType<GameSession>().ProcessPlayerDeath();
+        }
+    }
 }
